@@ -5,9 +5,34 @@
 
 #include <cstdio>
 
+#include <string>
+#include <memory>
+
+
+static const char *basic_vert = R"(
+#version 400
+in vec3 VertexPosition;
+in vec3 VertexColor;
+out vec3 Color;
+void main()
+{
+	Color = VertexColor;
+	gl_Position = vec4(VertexPosition, 1.0);
+}		
+)";
+
+static const char *codeArr[] = { basic_vert };
+
+void error_callback(int code, const char *msg)
+{
+	printf("glfw error : %s\n", msg);
+}
+
 int main(void)
 {
 	GLFWwindow* window;
+
+	glfwSetErrorCallback(error_callback);
 
 	/* Initialize the library */
 	if (!glfwInit())
@@ -52,6 +77,26 @@ int main(void)
 	glGetIntegerv(GL_NUM_EXTENSIONS, &nExtensions);
 	for (GLint i = 0; i < nExtensions; i++) {
 		printf("%s\n", glGetStringi(GL_EXTENSIONS, i));
+	}
+
+	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+	if (vertShader == 0) {
+		fprintf(stderr, "Error creating vertex shader\n");
+		return 1;
+	}
+	glShaderSource(vertShader, 1, &basic_vert, nullptr);
+	glCompileShader(vertShader);
+	GLint result;
+	glGetShaderiv(vertShader, GL_COMPILE_STATUS, &result);
+	if (GL_FALSE == result) {
+		GLint logLen;
+		glGetShaderiv(vertShader, GL_INFO_LOG_LENGTH, &logLen);
+		if (logLen > 0) {
+			std::unique_ptr<char> log(new char[logLen]);
+			GLsizei written;
+			glGetShaderInfoLog(vertShader, logLen, &written, log.get());
+			fprintf(stderr, "Shader log : %s\n", log.get());
+		}
 	}
 
 	/* Loop until the user closes the window */
