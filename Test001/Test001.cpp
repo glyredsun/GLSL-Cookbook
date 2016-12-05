@@ -13,8 +13,8 @@
 
 static const char *basic_vert = R"(
 #version 400
-in vec3 VertexPosition;
-in vec3 VertexColor;
+layout(location = 0) in vec3 VertexPosition;
+layout(location = 1) in vec3 VertexColor;
 out vec3 Color;
 void main()
 {
@@ -26,7 +26,7 @@ void main()
 static const char *basic_frag = R"(
 #version 400
 in vec3 Color;
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
 void main()
 {
 	FragColor = vec4(Color, 1.0);
@@ -166,6 +166,21 @@ int main(void)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(pos), pos, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, vobBuf[COLOR]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+
+	{
+		GLint maxLength, nAttribs;
+		glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxLength);
+		glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &nAttribs);
+		std::unique_ptr<GLchar> name(new GLchar[maxLength]);
+		GLint written, size, location;
+		GLenum type;
+		for (int i = 0; i < nAttribs; i++) {
+			glGetActiveAttrib(program, i, maxLength, &written, &size, &type, name.get());
+			location = glGetAttribLocation(program, name.get());
+			printf("%-5d | %s\n", location, name);
+		}
+	}
+	
 	GLuint vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
