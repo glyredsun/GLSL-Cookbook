@@ -16,4 +16,6 @@
 	assert(false);							\
 } while (0)
 
+#define OFFSET_OF(type, member)	((size_t)(&(((type*)0)->member)))
+
 #endif // !_COMMON_H_
