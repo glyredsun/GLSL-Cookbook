@@ -17,5 +17,6 @@
 } while (0)
 
 #define OFFSET_OF(type, member)	((size_t)(&(((type*)0)->member)))
+#define ARRAY_LENGTH(arr)			(sizeof(arr) / sizeof(arr[0]))
 
 #endif // !_COMMON_H_
